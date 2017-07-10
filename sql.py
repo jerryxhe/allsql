@@ -3,7 +3,7 @@ import operator
 
 def _dict2sql(kw,joiner=",",escape_fun=lambda o:repr(o)[1:]):
 	return "".join(reduce(operator.__add__, [[str(k), "=", escape_fun(unicode(v)),joiner] 
-																								for k,v in kw.iteritems()])[:-1])
+					for k,v in kw.iteritems()])[:-1])																			for k,v in kw.iteritems()])[:-1])
 
 class SQLBaseClient:
 	"""Abstract class to fit multiple SQL backends (e.g. MySQL, MSSQL, PostgreSQL)"""	
