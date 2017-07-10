@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 from abc import ABCMeta,abstractproperty,abstractmethod
 import operator
 
