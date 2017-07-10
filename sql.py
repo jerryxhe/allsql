@@ -78,7 +78,7 @@ class psqlClient(SQLBaseClient):
 
 SQLBaseClient.register(psqlClient)
 
-class mysqlClient:
+class mysqlClient(SQLBaseClient):
 	"""pymysql backend for connect to to MySQL"""
 	def __init__(self, **kw):
 		super(self.__class__, self).__init__(**kw)
@@ -87,3 +87,5 @@ class mysqlClient:
 		self._cursor = self.conn.cursor()
 	def cursor(self):
 		return self._cursor
+
+SQLBaseClient.register(mysqlClient)
