@@ -1,10 +1,9 @@
+from abc import ABCMeta,abstractproperty,abstractmethod
 import operator
 
-def _dict2sql(kw, escape_fun=lambda o:repr(o)[1:]):
-	return "".join(reduce(operator.__add__, [[str(k), "=", escape_fun(unicode(v)),","] 
-                                        for k,v in kw.iteritems()])[:-1])
-
-from abc import ABCMeta,abstractproperty,abstractmethod
+def _dict2sql(kw,joiner=",",escape_fun=lambda o:repr(o)[1:]):
+	return "".join(reduce(operator.__add__, [[str(k), "=", escape_fun(unicode(v)),joiner] 
+																								for k,v in kw.iteritems()])[:-1])
 
 class SQLBaseClient:
 	"""Abstract class to fit multiple SQL backends (e.g. MySQL, MSSQL, PostgreSQL)"""	
@@ -49,6 +48,11 @@ class SQLBaseClient:
 		_rows = self.rows()
 		for r in self.cursor():
 			yield dict(zip(_rows, r))
+			
+	def select(self, tablename, **kw):
+		sql_escape = self.conn.escape if hasattr(self.conn, 'escape') else lambda st:repr(unicode(st))[1:]
+		query_str = "SELECT * FROM {} WHERE {}".format(tablename,_dict2sql(kw," AND ", sql_escape))
+		return list(self.ev(query_str))
 
 	def execute(self, query_str):
 		self.retry_execute(query_str)
@@ -57,7 +61,8 @@ class SQLBaseClient:
 	def update(self, _id, tablename, **kw):
 		if not hasattr(self, '_id_field_name'):
 			self._id_field_name = "ID"
-		query_str = "UPDATE {} SET {} WHERE {}={}".format(tablename,_dict2sql(kw, self.conn.escape), self._id_field_name, _id)
+		sql_escape = self.conn.escape if hasattr(self.conn, 'escape') else lambda st:repr(unicode(st))[1:]
+		query_str = "UPDATE {} SET {} WHERE {}={}".format(tablename,_dict2sql(kw, ",", sql_escape), self._id_field_name, _id)
 		self.retry_execute(query_str)
 		self.conn.commit() # commits transaction to the SQL connection
 
